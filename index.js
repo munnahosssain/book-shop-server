@@ -3,8 +3,9 @@ const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express()
-const port = process.env.PORT || 2000;
-
+const port = process.env.PORT || 3001;
+const ObjectId = require('mongodb').ObjectId;
+// const mongodb, {ObjectId} = require('mongodb');
 
 app.use(cors());
 app.use(express.json());
@@ -17,12 +18,21 @@ async function run() {
         await client.connect();
         const booksCollection = client.db('bookShop').collection('books');
 
-        app.get('/books', async(req, res) => {
+        app.get('/books', async (req, res) => {
             const query = {};
             const cursor = booksCollection.find(query);
-            const books = await cursor.toArray();
-            res.send(books)
-        })
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+
+        app.get('/books/:id', async(req, res) => {
+            const bookId = req.params.id;
+            booksCollection.findOne(({ _id: ObjectId(bookId) }), function (err, book) {
+                res.send(book);
+            })
+            // const result = await booksCollection.findOne({_id:ObjectId(bookId)});
+            // res.send(result);
+        });
     }
     finally { }
 }
@@ -30,8 +40,8 @@ run().catch(console.dir);
 
 app.get('/', (req, res) => {
     res.send('Practice maximum perfect!')
-})
+});
 
 app.listen(port, () => {
     console.log(`BookShop app listening on port ${port}`)
-})
+});
